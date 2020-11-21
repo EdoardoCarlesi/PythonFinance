@@ -114,7 +114,7 @@ def interactive_plot(data=None, title=None, mode="lines"):
 
 
 @time_total
-def montecarlo(data=None, n_runs=1):
+def generate_portfolios(data=None, w=None, n_runs=None):
     """ 
         Assign random asset allocations n times 
         - data should be normalized to the starting price of each stock
@@ -127,7 +127,10 @@ def montecarlo(data=None, n_runs=1):
     n_cols = len(data_cols)
 
     for i_mc in range(0, n_runs):
-        w = normalized_random(n_cols)
+
+        if w == None:
+            w = normalized_random(n_cols)
+        
         portfolio = make_portfolio(data=data, w=w)       
 
         key_p = 'P_' + str(i_mc)        
@@ -136,7 +139,7 @@ def montecarlo(data=None, n_runs=1):
     return portfolios
 
 
-def sharpe_ratio(Rp=None, Rf=None, sigma=None):
+def sharpe_ratio(rp=None, rf=None, sigma=None):
     """
         The Sharpe ratio is defined as 
         SR = (R_p - R_f) / sigma_p
@@ -145,7 +148,7 @@ def sharpe_ratio(Rp=None, Rf=None, sigma=None):
         sigma_p = volatility (std dev) of my portfolio
     """
 
-    return (Rp - Rf) / sigma
+    return (rp - rf) / sigma
 
 
 def beta(data=None, col_stock=None, col_market=None):
@@ -158,14 +161,20 @@ def beta(data=None, col_stock=None, col_market=None):
     return beta, alpha
 
 
-def capm(Rf=None, Beta=None, Rm=None):
+def capm(rf=None, beta=None, rm=None):
     """ 
         The expected return of a security is the risk-free rate of return, plus beta (the correlation between the stock and the market) 
-        times the risk premium incentive i.e. the difference between the risk-free rate and the one of this stock
+        times the risk premium incentive i.e. the difference between the risk-free rate and the one of this stock.
+        Rm is the market rate of return (e.g. S&P 500)
     """
 
-    return (Rf + Beta * (Rm - Rf))
+    return (rf + beta * (rm - rf))
 
 
+if __name__ == "__main__":
+    """
+        The main is used to test functions
+    """
+    pass
 
 

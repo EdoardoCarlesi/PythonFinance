@@ -14,48 +14,54 @@ if __name__ == "__main__":
     stock = pd.read_csv(data_file)
     stock_norm = f.normalize(data=stock)
     returns = pd.DataFrame()
-    
+ 
+    """
+    means = returns.mean()
+    print('Mean stock returns: ')
+    print(means)
+    """
+   
     n_cols = len(stock_norm.columns) -1
 
     for col in stock_norm.columns[1:]:
         returns[col] = f.daily_returns(data=stock_norm, col=col)
 
+    # (annualized) risk free rate is set to zero
+    rf = 0.00
+
+    n_days = 252
     col_sp500 = returns.columns[-1]
+    rm = returns[col_sp500].mean() * n_days
+    print(f'SP500 annual return: {rm}')
 
-    for col in returns.columns[1:-1]:
+    # Save the betas in this dictionary
+    stock_beta = dict()
+    stock_return = dict()
+
+    for col in returns.columns[:-1]:
         b, a = f.beta(data=returns, col_stock=col, col_market=col_sp500)   
+        #print(f'Stock = {col} has beta {b} and alpha {a}')
         
-        print(f'Stock = {col} has beta {b} and alpha {a}')
-
-    means = returns.mean()
-
-    '''
-    print(returns.head())
-    print(means)
-    print(stock_norm.head())
-
-        return_col = 'R_' + str(i)
-        portfolio_col = 'P_' + str(i)
-        portfolios[return_col] = daily_returns(data=portfolios, col=col)
+        # We use the CAPM to get the expected rate of return on a given stock (annualized)
+        rs = f.capm(rf=rf, beta=b, rm=rm) * 100.0
+        print(f'Stock = {col} should have an annualized rate of return = {rs}%')
         
-        # Plot just one series of return
-        df_tmp = portfolios[['Date', return_col]]
-        #interactive_plot(data = df_tmp, title = 'Daily returns')
+        stock_beta[col] = b
+        stock_return[col] = rs
 
-        #interactive_plot(data=portfolios[new_col], mode="histogram", title="Returns")
-        rf = 0.00
-        rp = portfolios[return_col].mean()
-        sigma = portfolios[return_col].std()
-        cumret = cumulative_returns(portfolios, col=portfolio_col).values[0]
-        sr = sharpe_ratio(Rf=rf, Rp=rp, sigma=sigma)
-        sr *= np.sqrt(252) # Adjust to the whole year
+    weights = 1.0 / 8.0 * np.ones(8)
+    #portfolios = f.generate_portfolios(data=returns, w=weights, n_runs=1)
 
-        print(f'Portfolio cumulative returns: {cumret}')
-        print(f'Portfolio standard deviation: {sigma}')
-        print(f'Portfolio avg. daily return : {rp}')
-        print(f'Sharpe ratio: {sr}')
-    '''
+    er_portfolio = sum(list(stock_return.values()) * weights)
+    print(f'Expected returns on the portfolio: {er_portfolio}')
 
+    weights_new = np.zeros(8)
 
+    # Test portfolio with apple and amazon only
+    weights_new[0] = 0.5
+    weights_new[4] = 0.5
+    
+    er_portfolio = sum(list(stock_return.values()) * weights_new)
+    print(f'Expected returns on the portfolio: {er_portfolio}')
 
 
