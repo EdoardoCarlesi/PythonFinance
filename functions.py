@@ -7,6 +7,10 @@ import functools
 import pandas as pd
 import numpy as np
 
+#import tensorflow as tf
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+
 from scipy import stats
 from copy import copy
 
