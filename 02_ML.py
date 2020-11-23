@@ -5,6 +5,8 @@ import functions as f
 from scipy import stats
 from copy import copy
 
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import LinearRegression
 
 
 if __name__ == "__main__":
@@ -41,7 +43,26 @@ if __name__ == "__main__":
     #f.show_plot(X_train, 'Training data')
     #f.show_plot(X_test, 'Testing data')
 
-    # Do some linear regression
+    # Do a linear regression with Ridge to avoid overfitting
+    regression_model = Ridge(alpha=1.2, fit_intercept=False)
+    #regression_model = LinearRegression()
+
+    regression_model.fit(X_train, y_train)
+
+    #Ridge(alpha=0.8, copy_X=True, fit_intercept=True, max_iter=None, normalize=False, random_state=None, solver='auto', tol=0.0001)
+
+    score = regression_model.score(X_test, y_test)
+    print('Ridge Regression Score: ', score)
+
+    predictions = regression_model.predict(X_test)
+
+    data = pd.DataFrame()
+    data['Date'] = stock['Date'].iloc[split:-1]
+    print(len(data['Date']), len(y_test))
+    data['True'] = y_test
+    data['Pred'] = predictions
+
+    f.interactive_plot(data=data, title='Ridge model')
 
 
 
