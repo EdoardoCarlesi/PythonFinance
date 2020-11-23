@@ -2,6 +2,8 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 
+import matplotlib.pyplot as plt
+
 import time
 import functools
 import pandas as pd
@@ -10,9 +12,68 @@ import numpy as np
 #import tensorflow as tf
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 
 from scipy import stats
 from copy import copy
+
+
+def prepare_data(normalize=True, data=None, split_fac=0.7):
+    """
+        Normalize and split the data into train and test set
+        Ordering here is important so we cannot use sklearn directly
+    """
+   
+    if normalize:
+        # Rescale all data to the (0,1) interval
+        sc = MinMaxScaler(feature_range = (0, 1))
+        data = sc.fit_transform(data.drop(columns = ['Date']))
+
+    X = data[:, :2]
+    y = data[:, 2:]
+
+    split = int(split_fac * len(X))
+
+    X_train = X[:split];     y_train = y[:split]
+    X_test = X[split:];     y_test = y[split:]
+
+    return X_train, y_train, X_test, y_test
+
+
+def show_plot(data=None, title=None):
+    """
+        Simple lineplot
+    """
+
+    plt.figure(figsize = (15, 7))
+    plt.plot(data, linewidth = 3)
+    plt.title(title)
+    plt.grid()
+
+    plt.show(block=False)
+    plt.pause(3)
+    plt.close()
+
+
+def individual_stock(price=None, volume=None, col=None):
+    """
+        Concatenate price and volume of a single stock into a single dataframe
+    """
+
+    return pd.DataFrame({'Date':price['Date'], 'ClosingPrice':price[col], 'Volume':volume[col]})
+
+
+def trading_window(data=None, n_days=1, drop_nan=True):
+    """
+        We shift all prices of n_days
+    """
+    
+    data['Target'] = data[['ClosingPrice']].shift(-n_days)
+
+    if drop_nan:
+        data = data.dropna()
+
+    return data
 
 
 def time_total(function):
