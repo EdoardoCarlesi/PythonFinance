@@ -18,7 +18,7 @@ from scipy import stats
 from copy import copy
 
 
-def prepare_data(normalize=True, data=None, split_fac=0.7):
+def prepare_data(normalize=True, data=None, split_fac=0.7, LSTM=False):
     """
         Normalize and split the data into train and test set
         Ordering here is important so we cannot use sklearn directly
@@ -29,8 +29,21 @@ def prepare_data(normalize=True, data=None, split_fac=0.7):
         sc = MinMaxScaler(feature_range = (0, 1))
         data = sc.fit_transform(data.drop(columns = ['Date']))
 
-    X = data[:, :2]
-    y = data[:, 2:]
+    # If using Keras for LSTM we need another kind of format for X and y
+    if LSTM == True:
+        X = []
+        y = []
+
+        for i in range(1, len(data)):
+            X.append(data[i-1:i, 0])
+            y.append(data[i, 0])
+
+        X = np.asarray(X)
+        y = np.asarray(y)
+
+    else:
+        X = data[:, :2]
+        y = data[:, 2:]
 
     split = int(split_fac * len(X))
 
